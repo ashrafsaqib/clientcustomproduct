@@ -386,7 +386,7 @@ function h(string $value): string
             initialStep: <?= (int)$initialStep ?>
         };
     </script>
-    <script src="/assets/connection-wizard.js"></script>
+    <script src="assets/connection-wizard.js"></script>
 </div>
 </body>
 </html>
