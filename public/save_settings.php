@@ -5,7 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../src/bootstrap.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    redirectWithMessage('/index.php', 'Invalid request method.', 'error');
+    redirectWithMessage('index.php', 'Invalid request method.', 'error');
 }
 
 function cleanValue(string $value): string
@@ -32,7 +32,7 @@ $required = [
 
 foreach ($required as $key) {
     if ($values[$key] === '') {
-        redirectWithMessage('/index.php', 'Missing required field: ' . $key, 'error');
+        redirectWithMessage('index.php', 'Missing required field: ' . $key, 'error');
     }
 }
 
@@ -44,13 +44,13 @@ foreach ($values as $key => $value) {
 $envPath = dirname(__DIR__) . '/.env';
 $written = file_put_contents($envPath, implode(PHP_EOL, $envLines) . PHP_EOL);
 if ($written === false) {
-    redirectWithMessage('/index.php', 'Could not save settings to .env.', 'error');
+    redirectWithMessage('index.php', 'Could not save settings to .env.', 'error');
 }
 
 $action = (string)($_POST['action'] ?? 'save');
 if ($action === 'save_and_test') {
-    header('Location: /test_connection.php');
+    header('Location: test_connection.php');
     exit;
 }
 
-redirectWithMessage('/index.php', 'Settings saved successfully.');
+redirectWithMessage('index.php', 'Settings saved successfully.');

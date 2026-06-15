@@ -67,7 +67,7 @@ if (($report['exact']['status'] ?? '') === 'ok' && ($report['opencart']['status'
 
 $_SESSION['sync_report'] = $report;
 if ($report['overall'] === 'ready') {
-    redirectWithMessage('/index.php', 'Sync readiness check passed for Exact and OpenCart.');
+    redirectWithMessage('index.php', 'Sync readiness check passed for Exact and OpenCart.');
 }
 
-redirectWithMessage('/index.php', 'Sync readiness check completed with issues. Review report below.', 'error');
+redirectWithMessage('index.php', 'Sync readiness check completed with issues. Review report below.', 'error');

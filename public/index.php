@@ -273,9 +273,9 @@ function h(string $value): string
         </div>
         <div>
             <h3>Endpoints</h3>
-            <div class="row"><span class="label">OAuth start:</span> /oauth_start.php</div>
-            <div class="row"><span class="label">OAuth callback:</span> /oauth_callback.php</div>
-            <div class="row"><span class="label">Webhook:</span> /webhook.php</div>
+            <div class="row"><span class="label">OAuth start:</span> oauth_start.php</div>
+            <div class="row"><span class="label">OAuth callback:</span> oauth_callback.php</div>
+            <div class="row"><span class="label">Webhook:</span> webhook.php</div>
         </div>
     </div>
 
@@ -283,7 +283,7 @@ function h(string $value): string
         <div class="card">
             <h3>Step 1: Connection Settings</h3>
             <p>Enter Exact values and save. This writes values into your local .env file.</p>
-            <form method="post" action="/save_settings.php" id="settingsForm">
+            <form method="post" action="save_settings.php" id="settingsForm">
                 <div class="form-grid">
                     <div class="field">
                         <label for="exact_client_id">Exact Client ID</label>
@@ -323,7 +323,7 @@ function h(string $value): string
             <h3>Step 2: Authorize with Exact OAuth</h3>
             <p>Click connect, finish consent in Exact, then return here.</p>
             <div class="btns">
-                <a class="btn btn-primary" href="/oauth_start.php">Connect to Exact Online</a>
+                <a class="btn btn-primary" href="oauth_start.php">Connect to Exact Online</a>
                 <button class="btn btn-ghost" type="button" id="backToStep1">Back to Settings</button>
                 <button class="btn btn-ghost" type="button" id="toStep3">Continue to Test Step</button>
             </div>
@@ -336,8 +336,8 @@ function h(string $value): string
             <h3>Step 3: Test Connection and Review Logs</h3>
             <p>Run connection test. If it fails, detailed messages appear below and in storage/connection.log.</p>
             <div class="btns">
-                <a class="btn btn-primary" href="/test_connection.php">Run Exact Connection Test</a>
-                <a class="btn btn-ghost" href="/refresh_token.php">Refresh Access Token</a>
+                <a class="btn btn-primary" href="test_connection.php">Run Exact Connection Test</a>
+                <a class="btn btn-ghost" href="refresh_token.php">Refresh Access Token</a>
                 <button class="btn btn-ghost" type="button" id="backToStep2">Back to OAuth Step</button>
             </div>
         </div>

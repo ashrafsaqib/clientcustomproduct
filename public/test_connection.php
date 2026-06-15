@@ -8,7 +8,7 @@ require_once __DIR__ . '/../src/ExactApi.php';
 $token = loadToken($config['token_file']);
 if (!$token) {
     appendConnectionLog('Connection test failed: no token found. User must complete OAuth connect first.', 'ERROR');
-    redirectWithMessage('/index.php', 'No token found. Connect first.', 'error');
+    redirectWithMessage('index.php', 'No token found. Connect first.', 'error');
 }
 
 try {
@@ -31,9 +31,9 @@ try {
     $result = $client->getCurrentMe((string)$token['access_token']);
     $_SESSION['api_result'] = $result;
     appendConnectionLog('Connection test succeeded against Exact current/Me endpoint.', 'INFO');
-    redirectWithMessage('/index.php', 'API test call succeeded.');
+    redirectWithMessage('index.php', 'API test call succeeded.');
 } catch (Throwable $e) {
     $_SESSION['api_result'] = ['error' => $e->getMessage()];
     appendConnectionLog('Connection test failed: ' . $e->getMessage(), 'ERROR');
-    redirectWithMessage('/index.php', 'API test failed. See result block below.', 'error');
+    redirectWithMessage('index.php', 'API test failed. See result block below.', 'error');
 }

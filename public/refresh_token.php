@@ -7,7 +7,7 @@ require_once __DIR__ . '/../src/ExactApi.php';
 
 $token = loadToken($config['token_file']);
 if (!$token || empty($token['refresh_token'])) {
-    redirectWithMessage('/index.php', 'No refresh token available. Connect first.', 'error');
+    redirectWithMessage('index.php', 'No refresh token available. Connect first.', 'error');
 }
 
 try {
@@ -19,7 +19,7 @@ try {
     }
 
     saveToken($config['token_file'], $newToken);
-    redirectWithMessage('/index.php', 'Token refreshed successfully.');
+    redirectWithMessage('index.php', 'Token refreshed successfully.');
 } catch (Throwable $e) {
-    redirectWithMessage('/index.php', 'Refresh failed: ' . $e->getMessage(), 'error');
+    redirectWithMessage('index.php', 'Refresh failed: ' . $e->getMessage(), 'error');
 }
