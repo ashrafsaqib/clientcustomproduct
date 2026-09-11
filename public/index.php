@@ -10,6 +10,8 @@ unset($_SESSION['flash']);
 $token = loadToken($config['token_file']);
 $apiResult = $_SESSION['api_result'] ?? null;
 unset($_SESSION['api_result']);
+$syncResult = $_SESSION['sync_result'] ?? null;
+unset($_SESSION['sync_result']);
 $connectionLogs = readConnectionLogs(80);
 
 $initialStep = 1;
@@ -371,6 +373,34 @@ function h(string $value): string
             </div>
         <?php endif; ?>
     </section>
+
+    <div class="card">
+        <h3>OpenCart &lt;-&gt; Exact Sync Center</h3>
+        <p class="mini">Connects directly to the OpenCart database (see config.php). Each run processes up to <?= (int)$config['sync_batch_size'] ?> new records so it stays within API limits; re-run to continue with the rest.</p>
+        <div class="btns">
+            <a class="btn btn-primary" href="sync_customers.php">Sync Customers &rarr; Debtors</a>
+            <a class="btn btn-primary" href="sync_orders.php">Sync Paid Orders &rarr; Sales Invoices</a>
+            <a class="btn btn-primary" href="sync_stock.php">Sync Exact Stock &rarr; OpenCart</a>
+        </div>
+    </div>
+
+    <?php if ($syncResult !== null): ?>
+        <div class="card">
+            <h3>Last Sync Result: <?= h((string)$syncResult['type']) ?></h3>
+            <?php if ($syncResult['type'] === 'stock'): ?>
+                <div class="row"><span class="label">Updated:</span> <?= (int)$syncResult['updated'] ?></div>
+                <div class="row"><span class="label">Unchanged:</span> <?= (int)$syncResult['unchanged'] ?></div>
+                <div class="row"><span class="label">Not matched:</span> <?= (int)$syncResult['not_found'] ?></div>
+            <?php else: ?>
+                <div class="row"><span class="label">Processed:</span> <?= (int)$syncResult['processed'] ?></div>
+                <div class="row"><span class="label">OK:</span> <?= (int)$syncResult['ok'] ?></div>
+                <div class="row"><span class="label">Failed:</span> <?= (int)$syncResult['failed'] ?></div>
+            <?php endif; ?>
+            <?php if (!empty($syncResult['rows'])): ?>
+                <pre><?= h((string)json_encode($syncResult['rows'], JSON_PRETTY_PRINT)) ?></pre>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
 
     <div class="card">
         <h3>Quick Actions</h3>

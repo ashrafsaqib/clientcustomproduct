@@ -70,6 +70,100 @@ class ExactApi
         return $response['json'];
     }
 
+    public function apiPost(string $path, array $body, string $accessToken): array
+    {
+        $url = $this->config['base_url'] . $path;
+
+        $headers = [
+            'Accept: application/json',
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $accessToken,
+        ];
+
+        $response = $this->curlJsonRequest('POST', $url, $headers, json_encode($body, JSON_UNESCAPED_SLASHES));
+
+        if ($response['status'] >= 300) {
+            throw new RuntimeException('API POST failed: HTTP ' . $response['status'] . ' ' . $response['body']);
+        }
+
+        return $response['json'];
+    }
+
+    /** Finds a CRM Account by email, or null if none matches. */
+    public function findAccountByEmail(string $division, string $email, string $accessToken): ?array
+    {
+        $result = $this->apiGet("/api/v1/{$division}/crm/Accounts", [
+            '$filter' => "Email eq '" . str_replace("'", "''", $email) . "'",
+            '$select' => 'ID,Name,Email',
+            '$top' => 1,
+        ], $accessToken);
+
+        $results = $result['d']['results'] ?? [];
+        return $results[0] ?? null;
+    }
+
+    /** Creates a new CRM Account (debtor) and returns the created record. */
+    public function createAccount(string $division, array $data, string $accessToken): array
+    {
+        $result = $this->apiPost("/api/v1/{$division}/crm/Accounts", $data, $accessToken);
+        return $result['d'] ?? $result;
+    }
+
+    /** Finds a Logistics Item by its code (matched against OpenCart model/sku), or null. */
+    public function findItemByCode(string $division, string $code, string $accessToken): ?array
+    {
+        if ($code === '') {
+            return null;
+        }
+
+        $result = $this->apiGet("/api/v1/{$division}/logistics/Items", [
+            '$filter' => "Code eq '" . str_replace("'", "''", $code) . "'",
+            '$select' => 'ID,Code,CurrentStock',
+            '$top' => 1,
+        ], $accessToken);
+
+        $results = $result['d']['results'] ?? [];
+        return $results[0] ?? null;
+    }
+
+    /** Creates a Sales Invoice with lines and returns the created record. */
+    public function createSalesInvoice(string $division, array $data, string $accessToken): array
+    {
+        $result = $this->apiPost("/api/v1/{$division}/salesinvoice/SalesInvoices", $data, $accessToken);
+        return $result['d'] ?? $result;
+    }
+
+    /** Returns Logistics Items with their current stock levels, following pagination up to $maxPages. */
+    public function getItemsStock(string $division, string $accessToken, int $maxPages = 20): array
+    {
+        $items = [];
+        $path = "/api/v1/{$division}/logistics/Items";
+        $query = [
+            '$select' => 'ID,Code,CurrentStock',
+            '$filter' => 'IsStockItem eq true',
+            '$top' => 60,
+        ];
+
+        for ($page = 0; $page < $maxPages; $page++) {
+            $result = $this->apiGet($path, $query, $accessToken);
+            $results = $result['d']['results'] ?? [];
+            foreach ($results as $item) {
+                $items[] = $item;
+            }
+
+            $next = $result['d']['__next'] ?? null;
+            if (!$next) {
+                break;
+            }
+
+            // __next is a full URL already containing the query, so switch to raw GET.
+            $path = str_replace($this->config['base_url'], '', $next);
+            $query = [];
+        }
+
+        return $items;
+    }
+
     private function requestToken(array $params): array
     {
         $url = $this->config['base_url'] . '/api/oauth2/token';
