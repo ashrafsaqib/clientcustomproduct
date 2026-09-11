@@ -25,15 +25,32 @@ try {
 }
 
 $prefix = Database::prefix($config);
-$stmt = $pdo->query("
-    SELECT customer_id, firstname, lastname, email, telephone
-    FROM `{$prefix}customer`
-    WHERE status = 1
-    ORDER BY customer_id ASC
-");
-$customers = $stmt->fetchAll();
+$testCustomerId = isset($_GET['customer_id']) && $_GET['customer_id'] !== '' ? (int)$_GET['customer_id'] : null;
+$force = isset($_GET['force']);
 
-$batchSize = max(1, (int)$config['sync_batch_size']);
+if ($testCustomerId !== null) {
+    $stmt = $pdo->prepare("
+        SELECT customer_id, firstname, lastname, email, telephone
+        FROM `{$prefix}customer`
+        WHERE customer_id = :customer_id
+        LIMIT 1
+    ");
+    $stmt->execute(['customer_id' => $testCustomerId]);
+    $customers = $stmt->fetchAll();
+    if (empty($customers)) {
+        redirectWithMessage('index.php', "Customer #{$testCustomerId} not found.", 'error');
+    }
+} else {
+    $stmt = $pdo->query("
+        SELECT customer_id, firstname, lastname, email, telephone
+        FROM `{$prefix}customer`
+        WHERE status = 1
+        ORDER BY customer_id ASC
+    ");
+    $customers = $stmt->fetchAll();
+}
+
+$batchSize = $testCustomerId !== null ? 1 : max(1, (int)$config['sync_batch_size']);
 $rows = [];
 $processed = 0;
 $okCount = 0;
@@ -45,7 +62,7 @@ foreach ($customers as $customer) {
     }
 
     $customerId = (int)$customer['customer_id'];
-    if ($store->isSynced('customer', $customerId)) {
+    if (!$force && $store->isSynced('customer', $customerId)) {
         continue;
     }
 

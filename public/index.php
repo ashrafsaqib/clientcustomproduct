@@ -384,6 +384,30 @@ function h(string $value): string
         </div>
     </div>
 
+    <div class="card">
+        <h3>Test a Single Record (Prototype)</h3>
+        <p class="mini">Enter one ID/code to test that sync in isolation instead of processing everything. "Force re-sync" re-runs even if already marked ok.</p>
+        <div class="grid">
+            <form method="get" action="sync_customers.php" class="field">
+                <label for="test_customer_id">OpenCart Customer ID</label>
+                <input id="test_customer_id" name="customer_id" type="number" min="1" placeholder="e.g. 42" required>
+                <label class="mini"><input type="checkbox" name="force" value="1"> Force re-sync</label>
+                <button class="btn btn-ghost" type="submit">Test Customer Sync</button>
+            </form>
+            <form method="get" action="sync_orders.php" class="field">
+                <label for="test_order_id">OpenCart Order ID</label>
+                <input id="test_order_id" name="order_id" type="number" min="1" placeholder="e.g. 1001" required>
+                <label class="mini"><input type="checkbox" name="force" value="1"> Force re-sync</label>
+                <button class="btn btn-ghost" type="submit">Test Order Sync</button>
+            </form>
+            <form method="get" action="sync_stock.php" class="field">
+                <label for="test_code">Product Model/SKU</label>
+                <input id="test_code" name="code" type="text" placeholder="e.g. PROD-001" required>
+                <button class="btn btn-ghost" type="submit">Test Stock Sync</button>
+            </form>
+        </div>
+    </div>
+
     <?php if ($syncResult !== null): ?>
         <div class="card">
             <h3>Last Sync Result: <?= h((string)$syncResult['type']) ?></h3>

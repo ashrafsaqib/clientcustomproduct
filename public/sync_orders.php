@@ -68,28 +68,44 @@ try {
 }
 
 $prefix = Database::prefix($config);
+$testOrderId = isset($_GET['order_id']) && $_GET['order_id'] !== '' ? (int)$_GET['order_id'] : null;
+$force = isset($_GET['force']);
 
-$statusIds = $config['paid_order_status_ids'];
-if (!empty($statusIds)) {
-    $placeholders = implode(',', array_fill(0, count($statusIds), '?'));
-    $sql = "SELECT order_id, customer_id, firstname, lastname, email, total, order_status_id, date_added, currency_code
-            FROM `{$prefix}order`
-            WHERE order_status_id IN ({$placeholders})
-            ORDER BY order_id ASC";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($statusIds);
+if ($testOrderId !== null) {
+    $stmt = $pdo->prepare("
+        SELECT order_id, customer_id, firstname, lastname, email, total, order_status_id, date_added, currency_code
+        FROM `{$prefix}order`
+        WHERE order_id = :order_id
+        LIMIT 1
+    ");
+    $stmt->execute(['order_id' => $testOrderId]);
+    $orders = $stmt->fetchAll();
+    if (empty($orders)) {
+        redirectWithMessage('index.php', "Order #{$testOrderId} not found.", 'error');
+    }
 } else {
-    $sql = "SELECT order_id, customer_id, firstname, lastname, email, total, order_status_id, date_added, currency_code
-            FROM `{$prefix}order`
-            WHERE order_status_id > 0
-            ORDER BY order_id ASC";
-    $stmt = $pdo->query($sql);
+    $statusIds = $config['paid_order_status_ids'];
+    if (!empty($statusIds)) {
+        $placeholders = implode(',', array_fill(0, count($statusIds), '?'));
+        $sql = "SELECT order_id, customer_id, firstname, lastname, email, total, order_status_id, date_added, currency_code
+                FROM `{$prefix}order`
+                WHERE order_status_id IN ({$placeholders})
+                ORDER BY order_id ASC";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($statusIds);
+    } else {
+        $sql = "SELECT order_id, customer_id, firstname, lastname, email, total, order_status_id, date_added, currency_code
+                FROM `{$prefix}order`
+                WHERE order_status_id > 0
+                ORDER BY order_id ASC";
+        $stmt = $pdo->query($sql);
+    }
+    $orders = $stmt->fetchAll();
 }
-$orders = $stmt->fetchAll();
 
 $lineStmt = $pdo->prepare("SELECT product_id, name, model, quantity, price FROM `{$prefix}order_product` WHERE order_id = :order_id");
 
-$batchSize = max(1, (int)$config['sync_batch_size']);
+$batchSize = $testOrderId !== null ? 1 : max(1, (int)$config['sync_batch_size']);
 $rows = [];
 $processed = 0;
 $okCount = 0;
@@ -101,7 +117,7 @@ foreach ($orders as $order) {
     }
 
     $orderId = (int)$order['order_id'];
-    if ($store->isSynced('order', $orderId)) {
+    if (!$force && $store->isSynced('order', $orderId)) {
         continue;
     }
 

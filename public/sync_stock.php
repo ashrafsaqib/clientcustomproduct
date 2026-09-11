@@ -23,9 +23,18 @@ try {
 }
 
 $prefix = Database::prefix($config);
+$testCode = isset($_GET['code']) ? trim((string)$_GET['code']) : '';
 
 try {
-    $items = $exact->getItemsStock($division, $accessToken);
+    if ($testCode !== '') {
+        $item = $exact->findItemByCode($division, $testCode, $accessToken);
+        $items = $item !== null ? [$item] : [];
+        if ($item === null) {
+            redirectWithMessage('index.php', "No Exact item found with code '{$testCode}'.", 'error');
+        }
+    } else {
+        $items = $exact->getItemsStock($division, $accessToken);
+    }
 } catch (Throwable $e) {
     appendConnectionLog('Stock sync failed to fetch Exact items: ' . $e->getMessage(), 'ERROR');
     redirectWithMessage('index.php', 'Stock sync failed to fetch Exact items: ' . $e->getMessage(), 'error');
